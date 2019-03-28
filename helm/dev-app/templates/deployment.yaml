@@ -1,0 +1,44 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ include "dev-app.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "dev-app.name" . }}
+    helm.sh/chart: {{ include "dev-app.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "dev-app.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "dev-app.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: node
+          image: my-node-image:latest
+
+        - name: nginx
+          image: my-nginx-image:latest
+
+        - name: mysql
+          image: my-mysql-image:latest
+          ports:
+            - containerPort: 3306
+          volumeMounts:
+            - name: efs-pvc
+              mountPath: "/var/lib/mysql"
+              subPath: {{ .Values.userName }}/unique-path/mysql
+      volumes:
+        - name: efs-pvc
+          persistentVolumeClaim:
+            claimName: efs-dev-resources
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}

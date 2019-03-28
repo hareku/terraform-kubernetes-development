@@ -1,0 +1,20 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: dev-app-http-to-https
+  annotations:
+    kubernetes.io/ingress.class: merge
+    merge.ingress.kubernetes.io/config: merged-ingress-for-dev-app
+    merge.ingress.kubernetes.io/priority: "10"
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /
+            backend:
+              serviceName: ssl-redirect
+              servicePort: use-annotation
+          - path: /*
+            backend:
+              serviceName: ssl-redirect
+              servicePort: use-annotation
